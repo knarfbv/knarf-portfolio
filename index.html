@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext x='32' y='51' text-anchor='middle' font-family='ui-sans-serif,system-ui,sans-serif' font-size='54' font-weight='700' fill='%2334d399'%3E%EA%9F%BB%3C/text%3E%3C/svg%3E" />
+    <title>knarf-portfolio</title>
+    <style>
+      @media (prefers-reduced-motion: no-preference) {
+        html[data-smooth-navigation] {
+          scroll-behavior: smooth;
+        }
+      }
+
+      #site-header {
+        transition: opacity 240ms ease-in-out;
+      }
+
+      :is(#about, #projects, #contact) {
+        scroll-margin-top: 6rem;
+      }
+
+      @media (min-width: 768px) {
+        #about {
+          scroll-margin-top: max(6rem, calc((100svh - var(--about-height, 100svh)) / 2));
+        }
+      }
+
+      #site-header[data-scroll-hidden]:not(:focus-within) {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        #site-header {
+          transition: transform 300ms cubic-bezier(0.22, 0.61, 0.36, 1), opacity 240ms ease-in-out;
+        }
+
+        #site-header[data-scroll-hidden]:not(:focus-within) {
+          transform: translateY(calc(-100% - 1rem));
+        }
+      }
+
+      body {
+        cursor: default;
+      }
+
+      :where(a[href], button:enabled, summary) {
+        cursor: pointer;
+      }
+
+      :where(input[type="text"], input[type="email"], textarea, [contenteditable="true"]) {
+        cursor: text;
+      }
+
+      #contact-form [aria-invalid="true"] {
+        border-color: #fb7185;
+      }
+
+      #profile-photo-dialog {
+        width: min(calc(100% - 3rem), 33rem, 59dvh);
+      }
+
+      .page-background {
+        overflow: clip;
+      }
+
+      .page-background::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: var(--page-background-height, 100%);
+        background: url("media/images/background.jpg") center top / cover no-repeat;
+      }
+
+      html {
+        background-color: #18181b;
+        scrollbar-width: none;
+      }
+
+      html::-webkit-scrollbar {
+        display: none;
+      }
+
+      html:has(#project-details[open], #profile-photo-dialog[open]) {
+        overflow: hidden;
+      }
+
+      html:has(#project-details[open], #profile-photo-dialog[open]) #page-scrollbar {
+        visibility: hidden;
+      }
+
+      #page-scrollbar {
+        --scrollbar-inset: 8px;
+        --thumb-color: rgb(255 255 255 / 20%);
+        position: fixed;
+        top: var(--scrollbar-inset);
+        right: var(--scrollbar-inset);
+        z-index: 60;
+        width: 7px;
+        height: calc(100% - 2 * var(--scrollbar-inset));
+        margin: 0;
+        appearance: none;
+        writing-mode: vertical-lr;
+        background: transparent;
+        cursor: default;
+      }
+
+      #page-scrollbar::-webkit-slider-runnable-track {
+        background: transparent;
+      }
+
+      #page-scrollbar::-moz-range-track {
+        background: transparent;
+      }
+
+      #page-scrollbar::-webkit-slider-thumb {
+        appearance: none;
+        width: 7px;
+        height: var(--thumb-height);
+        border-radius: 9999px;
+        background: var(--thumb-color);
+      }
+
+      #page-scrollbar::-moz-range-thumb {
+        width: 7px;
+        height: var(--thumb-height);
+        border: 0;
+        border-radius: 9999px;
+        background: var(--thumb-color);
+      }
+
+      #project-details {
+        --artwork-limit: max(0px, calc(85dvh - 15rem));
+        max-height: 85dvh;
+      }
+
+      #project-details[data-category="music"] {
+        --artwork-limit: max(0px, calc(85dvh - 20rem));
+        max-width: min(27rem, calc(max(16rem, var(--artwork-limit)) + 3rem));
+      }
+
+      @media (width < 640px) {
+        #page-scrollbar {
+          display: none;
+        }
+
+      }
+      .project-audio input {
+        appearance: none;
+        width: 100%;
+        height: 0.25rem;
+        border-radius: 9999px;
+        background: linear-gradient(to right, white var(--played, 0%), rgb(255 255 255 / 30%) var(--played, 0%));
+        cursor: pointer;
+      }
+
+      .project-audio input::-webkit-slider-thumb {
+        appearance: none;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: white;
+      }
+
+      .project-audio input::-moz-range-thumb {
+        width: 0.5rem;
+        height: 0.5rem;
+        border: 0;
+        border-radius: 50%;
+        background: white;
+      }
+
+      .project-volume {
+        position: relative;
+        justify-content: flex-end;
+      }
+
+      .project-volume-slider {
+        position: absolute;
+        bottom: calc(100% - 2px);
+        right: 0;
+        z-index: 1;
+        display: grid;
+        width: 1.5rem;
+        place-items: center;
+        padding: 0.25rem 0;
+        visibility: hidden;
+      }
+
+      .project-volume [data-volume] {
+        width: 0.25rem;
+        height: 3rem;
+        writing-mode: vertical-lr;
+        direction: rtl;
+        background: linear-gradient(to top, white var(--played, 0%), rgb(255 255 255 / 30%) var(--played, 0%));
+      }
+
+      @media (width >= 640px) and (hover: hover) and (pointer: fine) {
+        .project-volume:is(:hover, :has(:focus-visible)) .project-volume-slider {
+          visibility: visible;
+        }
+      }
+
+      @media (width < 640px), (hover: none), (pointer: coarse) {
+        .project-volume:has([aria-expanded="true"]) .project-volume-slider {
+          visibility: visible;
+        }
+
+        .project-volume [data-volume] {
+          width: 100%;
+          background-repeat: no-repeat;
+          background-position: center;
+          background-size: 0.25rem 100%;
+        }
+      }
+
+      .project-cards > [data-category] {
+        break-inside: avoid;
+        margin-bottom: 2rem;
+      }
+
+      .scroll-reveal-ready {
+        transition: opacity 360ms ease-out, translate 360ms ease-out, box-shadow 150ms ease-out;
+      }
+
+      [data-scroll-reveal="after-profile"].scroll-reveal-ready:not(.scroll-reveal-pending) {
+        transition-delay: 100ms, 100ms, 0s;
+      }
+
+      .scroll-reveal-pending {
+        opacity: 0.25;
+        translate: 0 var(--scroll-reveal-offset, 0px);
+        transition-duration: 0s;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .scroll-reveal-pending {
+          --scroll-reveal-offset: 12px;
+        }
+      }
+
+      .project-cards > [data-category="development"] img {
+        aspect-ratio: 16 / 9;
+        height: auto;
+      }
+
+      .project-cards > [data-category="music"] img {
+        aspect-ratio: 1;
+        height: auto;
+      }
+
+      #project-details[data-category="music"] :is(
+        #project-details-cover,
+        .project-details-header,
+        #project-details-content
+      ) {
+        width: min(100%, max(16rem, var(--artwork-limit)));
+        margin-inline: auto;
+      }
+
+      #project-details-cover > button:not([hidden]) {
+        position: relative;
+        display: block;
+        aspect-ratio: 1;
+        width: min(100%, var(--artwork-limit));
+        margin-bottom: 0.875rem;
+        overflow: hidden;
+      }
+
+      #project-details-cover img {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        object-fit: cover;
+      }
+
+      #project-details-cover > button::after {
+        content: "View credits";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgb(0 0 0 / 45%);
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 600;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #project-details-cover > button:is(:hover, :focus-visible)::after {
+        opacity: 1;
+      }
+
+      #project-details[data-category="music"] .project-details-header {
+        margin-bottom: 0.125rem;
+      }
+
+      #project-details[data-category="music"] .project-details-header form {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+      }
+
+      #project-details[data-category="music"] .project-details-header button {
+        background: rgb(24 24 27 / 75%);
+        border-radius: 50%;
+      }
+
+      #project-details[data-category="music"] #project-details-content > p {
+        margin-bottom: 0;
+      }
+
+      #project-details-content > .track-film {
+        margin-top: 0.25rem;
+      }
+
+      #project-details[data-category="sound"]:has(video) {
+        --artwork-limit: max(0px, calc(85dvh - 19.5rem));
+        --film-width: calc(var(--artwork-limit) * 16 / 9);
+        max-width: min(48rem, max(19rem, calc(var(--film-width) + 3rem)));
+      }
+
+      #project-details[data-category="sound"] {
+        --artwork-limit: max(0px, calc(85dvh - 16rem));
+        max-width: 48rem;
+      }
+
+
+
+      #project-details[data-category="sound"]:has(#project-details-content > img) {
+        max-width: min(48rem, max(19rem, calc(var(--artwork-limit) + 3rem)));
+      }
+
+      #project-details[data-category="sound"] #project-details-content > img {
+        width: min(100%, var(--artwork-limit));
+        height: auto;
+        margin-inline: auto;
+        background: transparent;
+      }
+
+      #project-details[data-category="sound"] .project-details-header {
+        position: relative;
+        margin-bottom: 0.25rem;
+        padding-right: 3rem;
+      }
+
+      #project-details[data-category="sound"] .project-details-header form {
+        position: absolute;
+        top: -0.25rem;
+        right: 0;
+      }
+
+      #project-details[data-category="sound"] .film-player:not(:fullscreen) {
+        clip-path: inset(0 0 1px round 0.75rem);
+        width: min(100%, var(--film-width));
+        aspect-ratio: 16 / 9;
+        margin-inline: auto;
+      }
+
+      #project-details[data-category="sound"] .film-player:not(:fullscreen) > video {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      #project-image-dialog img {
+        width: auto;
+        max-width: min(72rem, calc(100vw - 2rem));
+        max-height: 85dvh;
+      }
+
+      #project-details-content > img,
+      #project-details-content > .project-image-zoom img {
+        max-height: var(--artwork-limit);
+      }
+
+      .film-player .film-controls {
+        position: absolute;
+        inset: auto 0 0;
+        z-index: 1;
+        background: linear-gradient(transparent, rgb(0 0 0 / 85%));
+      }
+
+      @media (width >= 640px) and (hover: hover) and (pointer: fine) {
+        .film-player:not(:hover, :has(:focus-visible)) :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+          opacity: 0;
+          pointer-events: none;
+        }
+      }
+
+      @media (width < 640px), (hover: none), (pointer: coarse) {
+        .film-player[data-controls-visible="false"] :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+          opacity: 0;
+          pointer-events: none;
+        }
+      }
+
+      .film-player:fullscreen[data-controls-visible="false"] {
+        cursor: none;
+      }
+
+      .film-player:fullscreen[data-controls-visible="false"] :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #project-details-content .film-player:fullscreen {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: black;
+      }
+
+      #project-details-content .film-player:fullscreen > video {
+        flex: 1;
+        min-height: 0;
+        max-height: none;
+        border-radius: 0;
+      }
+
+    </style>
+  </head>
+
+  <body id="top" class="relative min-h-screen isolate">
+    <div aria-hidden="true" class="page-background absolute inset-0 -z-10 pointer-events-none">
+      <div class="absolute inset-0 backdrop-blur-sm"></div>
+    </div>
+
+    <!-- Nav -->
+    <header id="site-header" class="sticky z-50 max-w-5xl mx-auto px-3 top-2 sm:px-0">
+      <nav class="flex items-center justify-between px-3 py-4 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl sm:px-6">
+        <a href="index.html" class="text-lg font-bold text-white transition-colors hover:text-emerald-400">
+          KNAR<span class="text-emerald-400">ꟻ</span>
+        </a>
+        <div class="flex items-center gap-1 sm:gap-3">
+          <a href="#home" aria-label="Home" title="Home" class="grid h-10 w-10 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-white/5 hover:text-emerald-400 focus-visible:text-emerald-400">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
+            </svg>
+          </a>
+          <a href="#about" aria-label="About" title="About" class="grid h-10 w-10 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-white/5 hover:text-emerald-400 focus-visible:text-emerald-400">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0z" />
+            </svg>
+          </a>
+          <a href="#projects" aria-label="Projects" title="Projects" class="grid h-10 w-10 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-white/5 hover:text-emerald-400 focus-visible:text-emerald-400">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+          </a>
+          <a href="#contact" aria-label="Contact" title="Contact" class="grid h-10 w-10 place-items-center rounded-lg text-zinc-300 transition-colors hover:bg-white/5 hover:text-emerald-400 focus-visible:text-emerald-400">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z M3 7l9 6 9-6" />
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="w-full max-w-5xl px-6 mx-auto">
+      <!-- Home -->
+      <section id="home" class="flex flex-col justify-center min-h-screen -mt-20 text-black">
+        <h1 class="mb-8 text-4xl font-bold sm:text-5xl md:text-6xl">
+          <span class="inline-block py-2 bg-blue-200/80">Hi, I'm Frank.</span>
+        </h1>
+        <p class="max-w-xl mb-6 text-lg text-zinc-300 sm:text-xl">
+          
+I build digital experiences and create sounds that tell stories.
+        </p>
+        <div class="flex gap-4">
+          <a  
+            href="#projects"
+            class="px-6 py-3 font-semibold transition-colors rounded-lg shadow-lg bg-emerald-400 text-zinc-900 hover:bg-emerald-500"
+          >
+            Explore Projects
+          </a>
+          <a
+            href="#about"
+            class="px-6 py-3 font-semibold text-white transition-colors bg-transparent border rounded-lg border-zinc-300 hover:border-emerald-400 hover:bg-emerald-400 hover:text-zinc-900"
+          >
+            About Me
+          </a>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section id="about" class="mt-16 flex flex-col items-start gap-8 text-white sm:mt-24 md:flex-row">
+        <!-- Profile Card -->
+        <div data-scroll-reveal
+          class="flex flex-col items-center justify-center flex-shrink-0 w-full p-6 text-center shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl md:w-1/3"
+        >
+          <button id="open-profile-photo" type="button" aria-label="Enlarge profile photo" aria-haspopup="dialog" aria-controls="profile-photo-dialog"
+            class="group mb-4 h-48 w-48 overflow-hidden rounded-full border-4 border-emerald-400 md:h-52 md:w-52 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400">
+            <img
+              src="media/images/profile.png"
+              class="h-full w-full object-cover group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition"
+            />
+            <canvas class="h-full w-full object-cover group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" aria-hidden="true" hidden></canvas>
+          </button>
+          <h1 class="text-2xl font-bold">Frank Villareal</h1>
+          <p class="mb-2 text-zinc-300">3rd Year BSIT Student</p>
+          <div class="flex justify-center gap-4">
+            <!-- GitHub -->
+            <a
+              href="https://github.com/knarfbv"
+              target="_blank"
+              class="flex items-center justify-center w-10 h-10 text-green-600 transition-colors rounded-full bg-zinc-800 hover:bg-green-600 hover:text-white"
+            >
+              <svg
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M12.006 2a9.847 9.847 0 0 0-6.484 2.44 10.32 10.32 0 0 0-3.393 6.17 10.48 10.48 0 0 0 1.317 6.955 10.045 10.045 0 0 0 5.4 4.418c.504.095.683-.223.683-.494 0-.245-.01-1.052-.014-1.908-2.78.62-3.366-1.21-3.366-1.21a2.711 2.711 0 0 0-1.11-1.5c-.907-.637.07-.621.07-.621.317.044.62.163.885.346.266.183.487.426.647.71.135.253.318.476.538.655a2.079 2.079 0 0 0 2.37.196c.045-.52.27-1.006.635-1.37-2.219-.259-4.554-1.138-4.554-5.07a4.022 4.022 0 0 1 1.031-2.75 3.77 3.77 0 0 1 .096-2.713s.839-.275 2.749 1.05a9.26 9.26 0 0 1 5.004 0c1.906-1.325 2.74-1.05 2.74-1.05.37.858.406 1.828.101 2.713a4.017 4.017 0 0 1 1.029 2.75c0 3.939-2.339 4.805-4.564 5.058a2.471 2.471 0 0 1 .679 1.897c0 1.372-.012 2.477-.012 2.814 0 .272.18.592.687.492a10.05 10.05 0 0 0 5.388-4.421 10.473 10.473 0 0 0 1.313-6.948 10.32 10.32 0 0 0-3.39-6.165A9.847 9.847 0 0 0 12.007 2Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </a>
+
+            <!-- LinkedIn -->
+            <a
+              href="https://www.linkedin.com/in/fbvillareal/"
+              target="_blank"
+              class="flex items-center justify-center w-10 h-10 text-blue-600 transition-colors rounded-full bg-zinc-800 hover:bg-blue-600 hover:text-white"
+            >
+              <svg
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="currentColor"
+                  fill-rule="evenodd"
+                  d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <div class="w-full min-w-0 flex-1 space-y-4">
+          <div data-scroll-reveal="after-profile" class="rounded-xl bg-zinc-900/80 p-6 shadow-lg backdrop-blur-md">
+            <h2 class="mb-4 text-3xl font-bold text-emerald-400">About Me</h2>
+            <div class="max-w-xl space-y-3 leading-relaxed text-zinc-300">
+              <p>I’m currently pursuing a Bachelor of Science in Information Technology at Filamer Christian University, Inc.</p>
+              <p>Outside of my studies, I work on creative projects in music and sound.</p>
+            </div>
+          </div>
+          <div data-scroll-reveal class="rounded-xl bg-zinc-900/80 p-6 shadow-lg backdrop-blur-md">
+            <h3 class="mb-3 text-base font-medium text-white">Skills</h3>
+            <dl class="space-y-3 text-sm">
+              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Development</dt>
+                <dd class="leading-relaxed text-zinc-400">Python, Django, JavaScript, HTML, CSS, Tailwind CSS, MySQL, PostgreSQL</dd>
+              </div>
+              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">IT Support &amp; Networking</dt>
+                <dd class="leading-relaxed text-zinc-400">Troubleshooting, software setup, LAN setup, Ethernet cabling</dd>
+              </div>
+              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Audio</dt>
+                <dd class="leading-relaxed text-zinc-400">Music production, sound recording, sound design</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects -->
+      <section id="projects" class="mx-auto mt-16 w-full max-w-5xl text-white sm:mt-24">
+        <div data-scroll-reveal class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-4 mb-8">
+          <h2 class="text-4xl font-bold text-emerald-400">Projects</h2>
+          <div class="flex flex-wrap gap-x-4 gap-y-2" role="group" aria-label="Filter projects">
+            <button type="button" data-filter="all" aria-pressed="true" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">All</button>
+            <button type="button" data-filter="development" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Development</button>
+            <button type="button" data-filter="music" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Music</button>
+            <button type="button" data-filter="sound" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Sound</button>
+          </div>
+        </div>
+        <div class="project-cards gap-8 md:columns-2">
+          <!-- Project 1 -->
+          <div data-category="development" class="group relative flex flex-col p-6 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/face-catcher.png" class="mb-4 w-full rounded-xl bg-black/25 object-contain group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <h3 class="mb-2 text-2xl font-bold">Face Catcher</h3>
+            <p class="mb-4 text-zinc-300">Face-controlled AR game</p>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="View details for Face Catcher" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <span aria-hidden="true" class="mt-auto inline-flex items-center gap-2 font-semibold text-emerald-400">
+              <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 11v5m0-8h.01" />
+                </svg>
+              </span>
+              View details
+            </span>
+            <template>
+              <p>A webcam game that tracks your face and hands in real time. Use mouth movements to play and hand gestures in boss battles as the difficulty increases.</p>
+              <p><strong>Built with</strong> Python, OpenCV, MediaPipe, NumPy</p>
+            </template>
+          </div>
+
+          <div data-category="development" class="group relative flex flex-col p-6 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/ice-plant-management-system.png" class="mb-4 w-full rounded-xl bg-black/25 object-contain group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <h3 class="mb-2 text-2xl font-bold">Ice Plant Management System</h3>
+            <p class="mb-4 text-zinc-300">Inventory, customer, and order management</p>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="View details for Ice Plant Management System" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <span aria-hidden="true" class="mt-auto inline-flex items-center gap-2 font-semibold text-emerald-400">
+              <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 11v5m0-8h.01" />
+                </svg>
+              </span>
+              View details
+            </span>
+            <template>
+              <p>A web app for tracking ice plant inventory, managing customer records, and processing orders. It stores business data in a relational database.</p>
+              <p><strong>Built with</strong> Python, Django, MySQL</p>
+            </template>
+          </div>
+
+          <div data-category="music" class="group relative flex flex-col p-6 pb-4 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/gusto.jpg" class="mb-4 w-full rounded-xl object-cover group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-2xl font-bold">Gusto (Remaster)</h3>
+                <p class="text-zinc-300">Orlie Escote</p>
+                <div class="mt-1 text-sm tabular-nums text-zinc-400">
+                  Music · <time datetime="PT2M">2:00</time>
+                </div>
+              </div>
+              <span aria-hidden="true" class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 3v18l16-9z" />
+                </svg>
+              </span>
+            </div>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="Open Gusto (Remaster) player" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <template>
+              <p class="track-film text-sm text-zinc-400"><cite>Lihim na Liham</cite> · OST</p>
+              <audio hidden preload="metadata" src="media/audio/gusto-remaster.wav" data-writer="Orlie Escote" data-writer-role="Composer &middot; Lyricist" data-composer></audio>
+            </template>
+          </div>
+
+          <div data-category="music" class="group relative flex flex-col p-6 pb-4 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/kulong.jpg" class="mb-4 w-full rounded-xl object-cover group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <h3 class="text-2xl font-bold">Kulong</h3>
+                <p class="text-zinc-300">Tefu</p>
+                <div class="mt-1 text-sm tabular-nums text-zinc-400">
+                  Music · <time datetime="PT2M55S">2:55</time>
+                </div>
+              </div>
+              <span aria-hidden="true" class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 3v18l16-9z" />
+                </svg>
+              </span>
+            </div>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="Open Kulong player" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <template>
+              <p class="track-film text-sm text-zinc-400"><cite>WHAT ARE THE ODDS?</cite> · OST</p>
+              <audio hidden preload="metadata" src="media/audio/kulong.wav" data-writer="Tefu" data-writer-role="Composer &middot; Lyricist"></audio>
+            </template>
+          </div>
+
+          <div data-category="sound" data-sound-nominee class="group relative p-6 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/what-are-the-odds-poster.png" class="mb-4 w-full rounded-xl bg-black/25 object-contain group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <h3 class="mb-1 text-2xl font-bold">WHAT ARE THE ODDS?</h3>
+            <span data-film-subtitle class="mb-2 block text-sm text-zinc-400">Sinephone 2026 &middot; Short film</span>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="Watch sound excerpt for WHAT ARE THE ODDS?" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span aria-hidden="true" class="inline-flex items-center gap-2 font-semibold text-emerald-400">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 3v18l16-9z" />
+                  </svg>
+                </span>
+                Watch sound excerpt
+              </span>
+              <time datetime="PT39S" class="text-sm tabular-nums text-zinc-400">0:39</time>
+            </div>
+            <template>
+              <section aria-label="Film roles" class="rounded-xl bg-white/5 p-3">
+                <h3 class="mb-2 text-sm font-semibold text-zinc-400">Roles</h3>
+                <ul class="flex flex-wrap gap-x-2 gap-y-1.5 text-sm text-zinc-300">
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Director</li>
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Recordist</li>
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Designer</li>
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Musical Scorer</li>
+                </ul>
+                <dl class="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-2 text-sm">
+                  <div>
+                    <dt class="text-xs text-zinc-400">Directed by</dt>
+                    <dd class="text-zinc-200">SHIGELLA &amp; TEFU</dd>
+                  </div>
+                  <div>
+                    <dt class="text-xs text-zinc-400">Production</dt>
+                    <dd class="text-zinc-200">TheGame Productions</dd>
+                  </div>
+                </dl>
+              </section>
+              <video controls playsinline preload="none" aria-label="Sound design excerpt from WHAT ARE THE ODDS?"
+                class="w-full object-contain" src="media/video/what-are-the-odds-excerpt.mp4"></video>
+            </template>
+          </div>
+
+          <div data-category="sound" data-sound-nominee class="group relative p-6 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/studio-4-poster.jpg" class="mb-4 w-full rounded-xl bg-black/25 object-contain group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <h3 class="mb-1 text-2xl font-bold">STUDIO 4</h3>
+            <span data-film-subtitle class="mb-2 block text-sm text-zinc-400">DUAG 2026 &middot; Short film</span>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="Watch sound excerpt for STUDIO 4" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span aria-hidden="true" class="inline-flex items-center gap-2 font-semibold text-emerald-400">
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                  <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 3v18l16-9z" />
+                  </svg>
+                </span>
+                Watch sound excerpt
+              </span>
+              <time datetime="PT41S" class="text-sm tabular-nums text-zinc-400">0:41</time>
+            </div>
+            <template>
+              <section aria-label="Film roles" class="rounded-xl bg-white/5 p-3">
+                <h3 class="mb-2 text-sm font-semibold text-zinc-400">Roles</h3>
+                <ul class="flex flex-wrap gap-x-2 gap-y-1.5 text-sm text-zinc-300">
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Director</li>
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Recordist</li>
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Designer</li>
+                </ul>
+                <dl class="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-2 text-sm">
+                  <div>
+                    <dt class="text-xs text-zinc-400">Directed by</dt>
+                    <dd class="text-zinc-200">SHIGELLA &amp; TEFU</dd>
+                  </div>
+                  <div>
+                    <dt class="text-xs text-zinc-400">Production</dt>
+                    <dd class="text-zinc-200">TheGame Productions</dd>
+                  </div>
+                </dl>
+              </section>
+              <video controls playsinline preload="none" aria-label="Sound design excerpt from STUDIO 4"
+                class="w-full object-contain" src="media/video/studio-4-excerpt.mp4"></video>
+            </template>
+          </div>
+
+          <div data-category="sound" class="group relative p-6 shadow-lg bg-zinc-900/80 backdrop-blur-md rounded-xl ring-1 ring-transparent hover:ring-emerald-400/50 focus-within:ring-emerald-400/50">
+            <img src="media/images/bag-o-kami-mangin-panyapon.jpg" class="mb-4 w-full rounded-xl bg-black/25 object-contain group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            <h3 class="mb-1 text-2xl font-bold">Bag-o Kami Mangin Panyapon</h3>
+            <span data-film-subtitle class="mb-2 block text-sm text-zinc-400">Mga Kwento ng Klima 2026 &middot; Short film</span>
+            <button type="button" data-open-project aria-haspopup="dialog" aria-label="View details for Bag-o Kami Mangin Panyapon" class="absolute inset-0 rounded-xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"></button>
+            <span aria-hidden="true" class="inline-flex items-center gap-2 font-semibold text-emerald-400">
+              <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/15 text-emerald-400 transition-colors group-hover:bg-emerald-400 group-hover:text-zinc-900 group-focus-within:bg-emerald-400 group-focus-within:text-zinc-900">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 11v5m0-8h.01" />
+                </svg>
+              </span>
+              View details
+            </span>
+            <template>
+              <section aria-label="Film roles" class="rounded-xl bg-white/5 p-3">
+                <h3 class="mb-2 text-sm font-semibold text-zinc-400">Roles</h3>
+                <ul class="flex flex-wrap gap-x-2 gap-y-1.5 text-sm text-zinc-300">
+                  <li class="rounded bg-white/5 px-2 py-0.5 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-400">Sound Recordist</li>
+                </ul>
+                <dl class="mt-3 grid grid-cols-2 gap-3 border-t border-white/10 pt-2 text-sm">
+                  <div>
+                    <dt class="text-xs text-zinc-400">Directed by</dt>
+                    <dd class="text-zinc-200">Kyd Torato</dd>
+                  </div>
+                  <div>
+                    <dt class="text-xs text-zinc-400">Production</dt>
+                    <dd class="text-zinc-200">Moving Eyelands PH x ReelOne</dd>
+                  </div>
+                </dl>
+              </section>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section id="contact" class="mx-auto my-16 w-full max-w-5xl sm:my-24">
+        <h2 data-scroll-reveal class="mb-6 text-center text-4xl font-bold text-emerald-400">Contact</h2>
+        <div data-scroll-reveal class="rounded-xl bg-zinc-900/80 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
+          <form id="contact-form" aria-describedby="contact-status" class="grid min-w-0 items-start gap-4 sm:grid-cols-2">
+            <div class="grid gap-2">
+              <label for="contact-name" class="text-sm font-medium">Name</label>
+              <input
+                id="contact-name"
+                type="text"
+                autocomplete="name"
+                placeholder="Your name"
+                class="min-w-0 w-full rounded-lg border border-white/10 bg-zinc-800/70 px-3 py-2.5 text-base text-white placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none"
+                required
+              />
+            </div>
+            <div class="grid gap-2">
+              <label for="contact-email" class="text-sm font-medium">Email</label>
+              <input
+                id="contact-email"
+                type="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+                class="min-w-0 w-full rounded-lg border border-white/10 bg-zinc-800/70 px-3 py-2.5 text-base text-white placeholder:text-zinc-400 focus:border-emerald-400 focus:outline-none"
+                required
+              />
+            </div>
+            <div class="grid gap-2 sm:col-span-2">
+              <label for="contact-message" class="text-sm font-medium">Message</label>
+              <textarea
+                id="contact-message"
+                rows="5"
+                class="min-w-0 w-full resize-y rounded-lg border border-white/10 bg-zinc-800/70 px-3 py-2.5 text-base text-white focus:border-emerald-400 focus:outline-none"
+                required
+              ></textarea>
+            </div>
+            <div class="flex items-start justify-between gap-3 sm:col-span-2">
+              <p id="contact-status" class="min-w-0 text-sm text-zinc-300">Message delivery is currently unavailable.</p>
+              <button
+                type="submit"
+                disabled
+                class="shrink-0 rounded-lg bg-emerald-400 px-3 py-2.5 sm:px-5 font-semibold text-zinc-900 transition-colors enabled:hover:bg-emerald-300 disabled:cursor-default disabled:bg-zinc-700 disabled:text-zinc-400"
+              >
+                Send Message
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="mt-6 text-center">
+          <a href="#top" class="group inline-flex py-1 text-xs font-semibold text-zinc-300 underline-offset-4 hover:text-white hover:underline focus-visible:underline">
+            <span class="pointer-events-none inline-flex items-center gap-2 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:-translate-y-0.5">
+              <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 19V5m-5 5 5-5 5 5" />
+              </svg>
+              Back to top
+            </span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-5xl py-8 mx-auto">
+      <div class="text-xs text-center text-zinc-900">© 2026 Frank Villareal. All Rights Reserved.</div>
+    </footer>
+    <input id="page-scrollbar" type="range" aria-label="Page scroll position" min="0" value="0" hidden />
+    <dialog id="profile-photo-dialog" aria-label="Profile photo"
+      class="fixed inset-0 m-auto overflow-hidden bg-zinc-900/70 shadow-2xl backdrop:bg-black/50">
+      <img src="media/images/profile.png" class="block h-auto w-full" />
+    </dialog>
+    <dialog id="project-image-dialog" aria-label="Enlarged project image"
+      class="fixed inset-0 m-auto w-fit overflow-hidden bg-zinc-900/70 shadow-2xl backdrop:bg-black/50">
+      <img class="block h-auto object-contain" />
+    </dialog>
+    <dialog id="project-details" aria-labelledby="project-details-title" class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-xl overflow-clip rounded-xl bg-zinc-900/70 text-white shadow-2xl backdrop-blur-md backdrop:bg-black/50">
+      <div class="p-6">
+        <div id="project-details-cover">
+          <button type="button" data-open-credits aria-label="View track credits" aria-haspopup="dialog" aria-controls="track-credits"
+            class="cursor-pointer rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-400" hidden></button>
+        </div>
+        <div class="project-details-header flex items-start justify-between gap-4 mb-4">
+          <h2 id="project-details-title" class="text-2xl font-bold text-white"></h2>
+          <form method="dialog">
+            <button aria-label="Close project details" class="grid h-10 w-10 place-items-center rounded text-zinc-300 hover:text-white">
+              <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="m6 6 12 12M18 6 6 18" />
+              </svg>
+            </button>
+          </form>
+        </div>
+        <div id="project-details-subtitle" class="mb-4" hidden>
+          <div class="flex flex-col items-start gap-x-2 gap-y-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <p class="text-sm text-zinc-400">Short film</p>
+            <span data-project-nomination class="sm:ml-auto rounded-full bg-emerald-400/10 px-2 py-0.5 text-xs font-semibold text-emerald-400 cursor-default transition-colors hover:bg-emerald-400/20 hover:text-emerald-300" hidden>Best Sound Design Nominee</span>
+          </div>
+        </div>
+        <div id="project-details-content" class="space-y-4 text-zinc-300"></div>
+      </div>
+    </dialog>
+    <dialog id="track-credits" aria-labelledby="track-credits-title"
+      class="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl bg-zinc-900/70 p-6 text-white shadow-2xl backdrop-blur-md backdrop:bg-black/50">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 id="track-credits-title" class="text-2xl font-bold text-white">Credits</h2>
+          <p data-credit-track class="text-emerald-400"></p>
+        </div>
+        <form method="dialog">
+          <button aria-label="Close credits" class="grid h-10 w-10 place-items-center rounded text-zinc-300 hover:text-white">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </form>
+      </div>
+      <div class="mt-2 space-y-3 text-sm">
+        <section aria-labelledby="credit-artists">
+          <h3 id="credit-artists" class="sr-only">Artists</h3>
+          <dl>
+            <dt data-credit-artist class="font-semibold"></dt>
+            <dd class="text-zinc-400">Main Artist</dd>
+          </dl>
+        </section>
+        <section aria-labelledby="credit-composition" class="border-t border-white/10 pt-3">
+          <h3 id="credit-composition" class="sr-only">Composition and lyrics</h3>
+          <dl class="space-y-2">
+            <div data-credit-writer hidden>
+              <dt class="font-semibold"></dt>
+              <dd class="text-zinc-400">Writer</dd>
+            </div>
+            <div data-credit-composer hidden>
+              <dt class="font-semibold">Frank Villareal</dt>
+              <dd class="text-zinc-400">Composer</dd>
+            </div>
+          </dl>
+        </section>
+        <section aria-labelledby="credit-production" class="border-t border-white/10 pt-3">
+          <h3 id="credit-production" class="sr-only">Production and engineering</h3>
+          <dl>
+            <dt class="font-semibold">Frank Villareal</dt>
+            <dd class="text-zinc-400">Producer</dd>
+          </dl>
+        </section>
+      </div>
+    </dialog>
+    <template id="film-player-controls">
+      <div class="film-player project-audio relative overflow-hidden rounded-xl bg-black">
+        <span class="pointer-events-none absolute left-3 top-3 rounded bg-black/70 px-2 py-1 text-xs font-semibold tracking-wide text-white">SOUND EXCERPT</span>
+        <button type="button" data-film-play aria-label="Play" class="film-play-toggle absolute left-1/2 top-1/2 z-10 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-zinc-900/50 text-white shadow-lg backdrop-blur-md hover:bg-zinc-900/60 motion-safe:transition-opacity sm:h-14 sm:w-14">
+          <svg aria-hidden="true" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M6 3v18l16-9z" /></svg>
+        </button>
+        <div class="film-controls flex items-center gap-2 px-2 pb-2 pt-4 text-xs tabular-nums text-zinc-300 motion-safe:transition-opacity" role="group" aria-label="Video controls">
+          <div class="flex min-w-0 flex-1 items-center gap-2">
+            <span data-film-elapsed>0:00</span>
+            <input data-film-seek type="range" min="0" max="0" step="0.1" value="0" aria-label="Seek through video" class="min-w-0 flex-1" disabled />
+            <span data-film-duration>--:--</span>
+          </div>
+          <div class="project-volume flex shrink-0 items-center text-zinc-300">
+            <button type="button" data-film-mute data-mute aria-label="Mute video" aria-pressed="false" class="grid h-7 w-6 shrink-0 place-items-center rounded hover:text-white">
+              <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                <path data-film-speaker d="M15 9a4 4 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12" />
+              </svg>
+            </button>
+            <span class="project-volume-slider min-w-0 flex-1">
+              <input data-volume type="range" min="0" max="100" step="1" value="100" aria-label="Video volume" class="min-w-0" />
+            </span>
+          </div>
+          <button type="button" data-film-fullscreen aria-label="Enter fullscreen" class="grid h-8 w-6 shrink-0 place-items-center rounded hover:text-white">
+            <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 4H4v5m11-5h5v5m0 6v5h-5m-6 0H4v-5" />
+            </svg>
+          </button>
+        </div>
+        <p data-film-status role="status" class="pointer-events-none absolute inset-x-2 bottom-14 rounded bg-black/75 px-3 py-2 text-sm text-zinc-300" hidden></p>
+      </div>
+    </template>
+    <template id="project-audio-controls">
+      <div class="project-audio space-y-2" role="group" aria-label="Audio player">
+        <div class="flex items-center justify-center gap-3">
+          <button type="button" data-skip="-1" tabindex="-1" aria-label="Previous track" class="grid h-9 w-9 place-items-center rounded-full text-zinc-300 hover:text-white">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 5h3v14H4zm4 7 12-7v14z" />
+            </svg>
+          </button>
+          <button type="button" data-play aria-label="Play" class="grid h-10 w-10 place-items-center rounded-full bg-white text-zinc-900 hover:bg-zinc-200">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 3v18l16-9z" />
+            </svg>
+          </button>
+          <button type="button" data-skip="1" tabindex="-1" aria-label="Next track" class="grid h-9 w-9 place-items-center rounded-full text-zinc-300 hover:text-white">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 5v14l12-7zm13 0h3v14h-3z" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex items-center gap-2 text-xs tabular-nums text-zinc-300">
+          <span data-elapsed>0:00</span>
+          <input data-seek type="range" min="0" max="0" step="0.1" value="0" aria-label="Seek through track" class="min-w-0 flex-1" disabled />
+          <span data-duration>–:––</span>
+          <div class="project-volume flex shrink-0 items-center text-zinc-300">
+            <button type="button" data-mute aria-label="Mute" aria-pressed="false" class="grid h-7 w-6 shrink-0 place-items-center rounded hover:text-white">
+              <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                <path data-mute-icon d="M15 9a4 4 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12" />
+              </svg>
+            </button>
+            <span class="project-volume-slider min-w-0 flex-1">
+              <input data-volume type="range" min="0" max="100" step="1" value="100" aria-label="Volume" class="min-w-0" />
+            </span>
+          </div>
+        </div>
+        <p data-audio-status role="status" class="text-xs text-zinc-300" hidden></p>
+      </div>
+    </template>
+    <script>
+      const pageScrollbar = document.querySelector("#page-scrollbar");
+      const scrollPage = document.scrollingElement;
+      const siteHeader = document.querySelector("#site-header");
+      let lastHeaderScroll = Math.max(scrollPage.scrollTop, 0);
+      let navbarJumpTimer;
+
+      function holdNavbarVisible() {
+        siteHeader.removeAttribute("data-scroll-hidden");
+        clearTimeout(navbarJumpTimer);
+        navbarJumpTimer = setTimeout(() => { navbarJumpTimer = undefined; }, 180);
+      }
+
+      function syncScrollbar() {
+        const viewportHeight = scrollPage.clientHeight;
+        const pageHeight = scrollPage.scrollHeight;
+        const scrollRange = pageHeight - viewportHeight;
+        pageScrollbar.hidden = scrollRange <= 0;
+        pageScrollbar.max = scrollRange;
+        pageScrollbar.value = scrollPage.scrollTop;
+        const thumbHeight = pageScrollbar.clientHeight * viewportHeight / pageHeight;
+        pageScrollbar.style.setProperty("--thumb-height", `${Math.max(32, thumbHeight)}px`);
+      }
+
+      pageScrollbar.addEventListener("input", () => {
+        scrollPage.scrollTo({ top: pageScrollbar.valueAsNumber, behavior: "instant" });
+      });
+      window.addEventListener("scroll", () => {
+        const scrollTop = Math.max(0, scrollPage.scrollTop);
+        pageScrollbar.value = scrollTop;
+        if (navbarJumpTimer !== undefined) {
+          lastHeaderScroll = scrollTop;
+          holdNavbarVisible();
+          return;
+        }
+        const distance = scrollTop - lastHeaderScroll;
+
+        if (scrollTop <= 24) {
+          siteHeader.removeAttribute("data-scroll-hidden");
+        } else if (Math.abs(distance) < 6) {
+          return;
+        } else {
+          siteHeader.toggleAttribute("data-scroll-hidden", distance > 0);
+        }
+
+        lastHeaderScroll = scrollTop;
+      }, { passive: true });
+      window.addEventListener("resize", syncScrollbar);
+      syncScrollbar();
+
+      const aboutSection = document.querySelector("#about");
+      function syncAboutJump() {
+        aboutSection.style.setProperty("--about-height", aboutSection.offsetHeight + "px");
+      }
+      new ResizeObserver(syncAboutJump).observe(aboutSection);
+      syncAboutJump();
+
+      const projects = document.querySelector("#projects");
+      const filters = projects.querySelectorAll("[data-filter]");
+      const cards = projects.querySelectorAll("[data-category]");
+      const pageBackground = document.querySelector(".page-background");
+
+      function syncPageBackground() {
+        const hiddenCards = Array.from(cards).filter((card) => card.style.display === "none");
+        hiddenCards.forEach((card) => { card.style.display = ""; });
+        const fullHeight = document.body.offsetHeight;
+        hiddenCards.forEach((card) => { card.style.display = "none"; });
+        pageBackground.style.setProperty("--page-background-height", fullHeight + "px");
+      }
+
+      new ResizeObserver(() => {
+        syncScrollbar();
+        if (projects.querySelector('[data-filter="all"][aria-pressed="true"]')) syncPageBackground();
+      }).observe(document.body);
+      window.addEventListener("resize", syncPageBackground);
+      window.addEventListener("load", syncPageBackground, { once: true });
+      syncPageBackground();
+
+      if ("IntersectionObserver" in window) {
+        const revealOnScroll = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) entry.target.classList.remove("scroll-reveal-pending");
+          });
+        }, { rootMargin: "-24px 0px" });
+        const resetOffscreen = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) entry.target.classList.add("scroll-reveal-pending");
+          });
+        }, { rootMargin: "24px 0px" });
+
+        document.querySelectorAll("[data-scroll-reveal], .project-cards > [data-category]").forEach((element) => {
+          element.classList.add("scroll-reveal-ready");
+          revealOnScroll.observe(element);
+          resetOffscreen.observe(element);
+        });
+      }
+      const details = document.querySelector("#project-details");
+      const detailsTitle = document.querySelector("#project-details-title");
+      const detailsSubtitle = document.querySelector("#project-details-subtitle");
+      const detailsContent = document.querySelector("#project-details-content");
+      const coverButton = details.querySelector("[data-open-credits]");
+      const closeProject = details.querySelector('form[method="dialog"] button');
+      const audioControls = document.querySelector("#project-audio-controls");
+      const trackCredits = document.querySelector("#track-credits");
+      const tracks = Array.from(cards).filter((card) => card.dataset.category === "music");
+      let musicVolume = 1;
+      let musicMuted = false;
+      let filmVolume = 1;
+      let filmMuted = false;
+      const playbackActions = new WeakMap();
+      const touchVolume = matchMedia("(width < 640px), (hover: none), (pointer: coarse)");
+
+      function addVolumeWheel(volume, getLevel, setLevel) {
+        volume.closest(".project-volume").addEventListener("wheel", (event) => {
+          if (!event.deltaY || event.ctrlKey) return;
+          event.preventDefault();
+          const percent = Math.round(getLevel() * 100) - Math.sign(event.deltaY) * 5;
+          setLevel(Math.min(100, Math.max(0, percent)) / 100);
+        }, { passive: false });
+      }
+
+      function formatTime(seconds) {
+        return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+      }
+
+      function addPlayer(audio, card, autoplay) {
+        const player = audioControls.content.firstElementChild.cloneNode(true);
+        const play = player.querySelector("[data-play]");
+        const playIcon = play.querySelector("path");
+        const seek = player.querySelector("[data-seek]");
+        const volume = player.querySelector("[data-volume]");
+        const mute = player.querySelector("[data-mute]");
+        const muteIcon = mute.querySelector("[data-mute-icon]");
+        const elapsed = player.querySelector("[data-elapsed]");
+        const duration = player.querySelector("[data-duration]");
+        const status = player.querySelector("[data-audio-status]");
+
+        function syncVolume() {
+          const percent = Math.round(musicVolume * 100);
+          audio.volume = musicVolume;
+          audio.muted = musicMuted;
+          volume.value = percent;
+          volume.setAttribute("aria-valuetext", `${percent}%`);
+          volume.style.setProperty("--played", `${percent}%`);
+          if (!touchVolume.matches || mute.getAttribute("aria-expanded") === "true") {
+            mute.setAttribute("aria-pressed", String(musicMuted));
+          }
+          const speakerMark = musicMuted ? "m15 9 6 6m0-6-6 6" : "M15 9a4 4 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12";
+          muteIcon.setAttribute("d", speakerMark);
+        }
+
+        volume.addEventListener("input", () => {
+          musicVolume = volume.valueAsNumber / 100;
+          syncVolume();
+        });
+        addVolumeWheel(volume, () => musicVolume, (level) => {
+          musicVolume = level;
+          syncVolume();
+        });
+        if (touchVolume.matches) setVolumeExpanded(mute, false);
+        mute.addEventListener("click", () => {
+          if (touchVolume.matches && mute.getAttribute("aria-expanded") !== "true") {
+            setVolumeExpanded(mute, true);
+            syncVolume();
+            return;
+          }
+          musicMuted = !musicMuted;
+          syncVolume();
+        });
+        syncVolume();
+
+        function syncPlayer() {
+          const hasDuration = Number.isFinite(audio.duration) && audio.duration > 0;
+          playIcon.setAttribute("d", audio.paused ? "M6 3v18l16-9z" : "M4 3h5v18H4zm11 0h5v18h-5z");
+          play.setAttribute("aria-label", audio.paused ? "Play" : "Pause");
+          seek.disabled = !hasDuration;
+          seek.max = hasDuration ? audio.duration : 0;
+          seek.value = audio.currentTime;
+          seek.style.setProperty("--played", hasDuration ? `${100 * audio.currentTime / audio.duration}%` : "0%");
+          seek.setAttribute("aria-valuetext", formatTime(audio.currentTime));
+          elapsed.textContent = formatTime(audio.currentTime);
+          duration.textContent = hasDuration ? formatTime(audio.duration) : "–:––";
+        }
+
+        function showPlaybackError() {
+          status.textContent = "This track couldn’t play.";
+          status.hidden = false;
+        }
+
+        async function startPlayback() {
+          status.hidden = true;
+          try {
+            await audio.play();
+          } catch (error) {
+            if (error.name !== "AbortError") showPlaybackError();
+          }
+        }
+
+        function togglePlayback() {
+          if (audio.paused) startPlayback();
+          else audio.pause();
+        }
+
+        playbackActions.set(audio, togglePlayback);
+        play.addEventListener("click", togglePlayback);
+        seek.addEventListener("input", () => {
+          audio.currentTime = seek.valueAsNumber;
+          syncPlayer();
+        });
+        function skipTrack(direction) {
+          const index = (tracks.indexOf(card) + direction + tracks.length) % tracks.length;
+          showProject(tracks[index], !audio.paused);
+        }
+
+        player.querySelectorAll("[data-skip]").forEach((button) => {
+          button.addEventListener("click", () => skipTrack(Number(button.dataset.skip)));
+        });
+        play.addEventListener("keydown", (event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          if (!event.repeat) skipTrack(event.key === "ArrowLeft" ? -1 : 1);
+        });
+        ["play", "pause", "ended", "durationchange", "timeupdate"].forEach((event) => {
+          audio.addEventListener(event, syncPlayer);
+        });
+        audio.addEventListener("error", showPlaybackError);
+        audio.after(player);
+        syncPlayer();
+        if (autoplay) startPlayback();
+      }
+
+      function setVolumeExpanded(button, expanded) {
+        button.setAttribute("aria-expanded", String(expanded));
+        button.setAttribute("aria-label", expanded ? "Mute" : "Volume controls");
+        if (!expanded) button.removeAttribute("aria-pressed");
+      }
+
+      function createFilmPlayer(video) {
+        const player = document.querySelector("#film-player-controls").content.firstElementChild.cloneNode(true);
+        const play = player.querySelector("[data-film-play]");
+        const playIcon = play.querySelector("path");
+        const seek = player.querySelector("[data-film-seek]");
+        const elapsed = player.querySelector("[data-film-elapsed]");
+        const duration = player.querySelector("[data-film-duration]");
+        const mute = player.querySelector("[data-film-mute]");
+        const volume = player.querySelector("[data-volume]");
+        const speaker = mute.querySelector("[data-film-speaker]");
+        const fullscreen = player.querySelector("[data-film-fullscreen]");
+        const fullscreenIcon = fullscreen.querySelector("path");
+        const status = player.querySelector("[data-film-status]");
+        const supportsFullscreen = document.fullscreenEnabled && typeof player.requestFullscreen === "function";
+
+        let controlsTimer;
+
+        function hideFilmControls() {
+          clearTimeout(controlsTimer);
+          player.dataset.controlsVisible = "false";
+          if (touchVolume.matches) setVolumeExpanded(mute, false);
+        }
+
+        function scheduleFilmControlsHide() {
+          if (!touchVolume.matches && document.fullscreenElement !== player) return;
+          clearTimeout(controlsTimer);
+          controlsTimer = setTimeout(() => {
+            if (player.isConnected && details.open) hideFilmControls();
+          }, 1000);
+        }
+
+        function showFilmControls() {
+          if (!touchVolume.matches && document.fullscreenElement !== player) return;
+          player.dataset.controlsVisible = "true";
+          scheduleFilmControlsHide();
+        }
+
+        function syncControls() {
+          const canSeek = Number.isFinite(video.duration) && video.duration > 0;
+          play.setAttribute("aria-label", video.paused ? "Play" : "Pause");
+          playIcon.setAttribute("d", video.paused ? "M6 3v18l16-9z" : "M4 3h5v18H4zm11 0h5v18h-5z");
+          seek.disabled = !canSeek;
+          seek.max = canSeek ? video.duration : 0;
+          seek.value = video.currentTime;
+          seek.setAttribute("aria-valuetext", formatTime(video.currentTime));
+          seek.style.setProperty("--played", canSeek ? (100 * video.currentTime / video.duration) + "%" : "0%");
+          elapsed.textContent = formatTime(video.currentTime);
+          duration.textContent = canSeek ? formatTime(video.duration) : "--:--";
+          const volumePercent = Math.round(video.volume * 100);
+          volume.value = volumePercent;
+          volume.setAttribute("aria-valuetext", volumePercent + "%");
+          volume.style.setProperty("--played", volumePercent + "%");
+          if (!touchVolume.matches || mute.getAttribute("aria-expanded") === "true") {
+            mute.setAttribute("aria-pressed", String(video.muted));
+          }
+          speaker.setAttribute("d", video.muted ? "m15 9 6 6m0-6-6 6" : "M15 9a4 4 0 0 1 0 6m3-9a8.5 8.5 0 0 1 0 12");
+        }
+
+        function showStatus(message) {
+          status.textContent = message;
+          status.hidden = false;
+        }
+
+        async function togglePlayback() {
+          if (!video.paused) {
+            video.pause();
+            return;
+          }
+          status.hidden = true;
+          try {
+            await video.play();
+          } catch (error) {
+            if (error.name !== "AbortError") showStatus("This video could not play.");
+          }
+        }
+
+        playbackActions.set(video, togglePlayback);
+        play.addEventListener("click", togglePlayback);
+        video.addEventListener("click", () => {
+          if (!touchVolume.matches) {
+            togglePlayback();
+            return;
+          }
+
+          if (player.dataset.controlsVisible === "false") showFilmControls();
+          else hideFilmControls();
+        });
+        player.addEventListener("pointermove", (event) => {
+          if (event.pointerType !== "touch" && !event.buttons && document.fullscreenElement === player) {
+            showFilmControls();
+          }
+        });
+        player.addEventListener("pointerdown", () => clearTimeout(controlsTimer));
+        ["pointerup", "pointercancel"].forEach((event) => {
+          player.addEventListener(event, scheduleFilmControlsHide);
+        });
+        player.addEventListener("focusin", (event) => {
+          if (event.target.matches(":focus-visible")) showFilmControls();
+        });
+        player.addEventListener("keydown", showFilmControls);
+        video.addEventListener("play", showFilmControls);
+        video.addEventListener("pause", showFilmControls);
+        seek.addEventListener("input", () => {
+          video.currentTime = seek.valueAsNumber;
+          syncControls();
+        });
+        video.volume = filmVolume;
+        video.muted = filmMuted;
+        if (touchVolume.matches) setVolumeExpanded(mute, false);
+
+        function setVideoVolume(level) {
+          filmVolume = level;
+          video.volume = level;
+          syncControls();
+        }
+
+        volume.addEventListener("input", () => setVideoVolume(volume.valueAsNumber / 100));
+        addVolumeWheel(volume, () => filmVolume, setVideoVolume);
+        mute.addEventListener("click", () => {
+          if (touchVolume.matches && mute.getAttribute("aria-expanded") !== "true") {
+            setVolumeExpanded(mute, true);
+            syncControls();
+            return;
+          }
+          filmMuted = !video.muted;
+          video.muted = filmMuted;
+          syncControls();
+        });
+        fullscreen.hidden = !supportsFullscreen && typeof video.webkitEnterFullscreen !== "function";
+        player.addEventListener("fullscreenchange", () => {
+          const expanded = document.fullscreenElement === player;
+          clearTimeout(controlsTimer);
+          player.dataset.controlsVisible = "true";
+          scheduleFilmControlsHide();
+          fullscreen.setAttribute("aria-label", expanded ? "Exit fullscreen" : "Enter fullscreen");
+          fullscreenIcon.setAttribute("d", expanded
+            ? "M4 9h5V4 M15 4v5h5 M20 15h-5v5 M9 20v-5H4"
+            : "M9 4H4v5m11-5h5v5m0 6v5h-5m-6 0H4v-5");
+        });
+        fullscreen.addEventListener("click", async () => {
+          try {
+            if (document.fullscreenElement === player) await document.exitFullscreen();
+            else if (supportsFullscreen) await player.requestFullscreen();
+            else video.webkitEnterFullscreen();
+          } catch {
+            showStatus("Fullscreen is unavailable.");
+          }
+        });
+
+        ["play", "pause", "ended", "durationchange", "timeupdate", "volumechange"].forEach((event) => {
+          video.addEventListener(event, syncControls);
+        });
+        video.addEventListener("error", () => showStatus("This video could not load."));
+        video.controls = false;
+        player.prepend(video);
+        syncControls();
+        scheduleFilmControlsHide();
+        return player;
+      }
+
+      function showUnfocusedModal(modal) {
+        modal.showModal();
+        if (modal.contains(document.activeElement)) document.activeElement.blur();
+      }
+
+      const profilePhoto = document.querySelector("#profile-photo-dialog");
+      const profileButton = document.querySelector("#open-profile-photo");
+      const profileSource = profilePhoto.querySelector("img");
+      const profileFallback = profileButton.querySelector("img");
+      const profileThumbnail = profileButton.querySelector("canvas");
+
+      function drawProfileThumbnail() {
+        if (!profileSource.naturalWidth || !profileButton.clientWidth) return;
+        const context = profileThumbnail.getContext("2d");
+        if (!context) return;
+
+        const { naturalWidth, naturalHeight } = profileSource;
+        const density = window.devicePixelRatio || 1;
+        const crop = Math.min(naturalWidth, naturalHeight);
+        const size = Math.min(crop, Math.max(1, Math.round(profileButton.clientWidth * density)));
+        if (profileThumbnail.width === size && !profileThumbnail.hidden) return;
+
+        profileThumbnail.width = size;
+        profileThumbnail.height = size;
+        context.imageSmoothingQuality = "medium";
+        context.drawImage(profileSource, (naturalWidth - crop) / 2, (naturalHeight - crop) / 2, crop, crop, 0, 0, size, size);
+        profileFallback.hidden = true;
+        profileThumbnail.hidden = false;
+      }
+
+      profileSource.addEventListener("load", drawProfileThumbnail);
+      new ResizeObserver(drawProfileThumbnail).observe(profileButton);
+      window.addEventListener("resize", drawProfileThumbnail);
+      drawProfileThumbnail();
+      profileButton.addEventListener("click", () => {
+        showUnfocusedModal(profilePhoto);
+      });
+      profilePhoto.addEventListener("click", (event) => {
+        if (event.target === profilePhoto) profilePhoto.close();
+      });
+
+      const projectImageDialog = document.querySelector("#project-image-dialog");
+      projectImageDialog.addEventListener("click", (event) => {
+        if (event.target === projectImageDialog) projectImageDialog.close();
+      });
+
+      function showProject(card, autoplay = false) {
+        detailsContent.querySelector("audio, video")?.pause();
+        const artwork = card.querySelector("img");
+        details.dataset.category = card.dataset.category;
+        detailsTitle.textContent = card.querySelector("h3").textContent;
+        detailsSubtitle.hidden = card.dataset.category !== "sound";
+        detailsSubtitle.querySelector("p").textContent = card.querySelector("[data-film-subtitle]")?.textContent ?? "Short film";
+        detailsSubtitle.querySelector("[data-project-nomination]").hidden = !card.hasAttribute("data-sound-nominee");
+        coverButton.replaceChildren();
+        coverButton.hidden = true;
+        const summary = card.querySelector("p");
+        detailsContent.replaceChildren(card.querySelector("template").content.cloneNode(true));
+        if (summary) detailsContent.prepend(summary.cloneNode(true));
+        const video = detailsContent.querySelector("video");
+        if (video) {
+          detailsContent.prepend(createFilmPlayer(video));
+        } else if (artwork && card.dataset.category === "development") {
+          const zoom = document.createElement("button");
+          zoom.type = "button";
+          zoom.className = "project-image-zoom group block w-full cursor-zoom-in rounded-xl";
+          zoom.setAttribute("aria-label", "Enlarge project image");
+          zoom.setAttribute("aria-haspopup", "dialog");
+          zoom.setAttribute("aria-controls", "project-image-dialog");
+          const preview = artwork.cloneNode(true);
+          preview.classList.remove("mb-4");
+          zoom.append(preview);
+          zoom.addEventListener("click", () => {
+            projectImageDialog.querySelector("img").src = artwork.src;
+            showUnfocusedModal(projectImageDialog);
+          });
+          detailsContent.prepend(zoom);
+        } else if (artwork) {
+          const artworkContainer = card.dataset.category === "music" ? coverButton : detailsContent;
+          artworkContainer.prepend(artwork.cloneNode(true));
+          if (artworkContainer === coverButton) coverButton.hidden = false;
+        }
+        const audio = detailsContent.querySelector("audio");
+        closeProject.tabIndex = audio ? -1 : 0;
+        if (audio) addPlayer(audio, card, autoplay);
+        if (!details.open) showUnfocusedModal(details);
+      }
+
+      coverButton.addEventListener("click", () => {
+        trackCredits.querySelector("[data-credit-track]").textContent = detailsTitle.textContent;
+        trackCredits.querySelector("[data-credit-artist]").textContent = detailsContent.querySelector("p").textContent;
+        const audio = detailsContent.querySelector("audio");
+        const writer = audio?.dataset.writer ?? "";
+        const writerCredit = trackCredits.querySelector("[data-credit-writer]");
+        writerCredit.querySelector("dt").textContent = writer;
+        writerCredit.querySelector("dd").textContent = audio?.dataset.writerRole ?? "Writer";
+        writerCredit.hidden = !writer;
+        trackCredits.querySelector("[data-credit-composer]").hidden = !audio?.hasAttribute("data-composer");
+        showUnfocusedModal(trackCredits);
+      });
+
+      cards.forEach((card) => {
+        card.querySelector("[data-open-project]").addEventListener("click", () => showProject(card));
+      });
+
+      document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+      document.addEventListener("click", (event) => {
+        const sectionLink = event.target.closest('a[href^="#"]');
+        if (sectionLink) {
+          document.documentElement.setAttribute("data-smooth-navigation", "");
+          if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+            holdNavbarVisible();
+          }
+        }
+
+        if (event.detail === 0) return;
+        const control = event.target.closest('button, a[href], input[type="range"], summary');
+        if (control && control === document.activeElement) control.blur();
+      }, true);
+
+      const contactForm = document.querySelector("#contact-form");
+
+      contactForm.addEventListener("invalid", (event) => {
+        event.preventDefault();
+        const field = event.target;
+        field.setAttribute("aria-invalid", "true");
+        if (field === contactForm.querySelector(":invalid")) field.focus();
+      }, true);
+
+      contactForm.addEventListener("input", (event) => {
+        if (event.target.validity?.valid) event.target.removeAttribute("aria-invalid");
+      });
+
+      function handleMediaSpace(event) {
+        if (event.key !== " " || event.altKey || event.ctrlKey || event.metaKey) return;
+        const target = event.target;
+        if (target.isContentEditable || target.matches?.('textarea, input[type="text"], input[type="email"]')) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        if (!details.open || event.type !== "keydown" || event.repeat) return;
+
+        const media = detailsContent.querySelector("audio, video");
+        if (media) playbackActions.get(media)?.();
+      }
+
+      document.addEventListener("keydown", handleMediaSpace, true);
+      document.addEventListener("keyup", handleMediaSpace, true);
+
+      details.addEventListener("click", (event) => {
+        if (touchVolume.matches && !event.target.closest(".project-volume")) {
+          const volumeButton = detailsContent.querySelector('[data-mute][aria-expanded="true"]');
+          if (volumeButton) setVolumeExpanded(volumeButton, false);
+        }
+        if (event.target === details) details.close();
+      });
+
+      trackCredits.addEventListener("click", (event) => {
+        if (event.target !== trackCredits) return;
+        const bounds = trackCredits.getBoundingClientRect();
+        const outside = event.clientX < bounds.left || event.clientX >= bounds.right ||
+          event.clientY < bounds.top || event.clientY >= bounds.bottom;
+        if (outside) trackCredits.close();
+      });
+
+      trackCredits.addEventListener("close", () => {
+        if (details.open && details.contains(document.activeElement)) document.activeElement.blur();
+      });
+
+      details.addEventListener("close", () => {
+        detailsContent.querySelector("audio, video")?.pause();
+      });
+
+      filters.forEach((button) => {
+        button.addEventListener("click", () => {
+          const category = button.dataset.filter;
+
+          filters.forEach((filter) => {
+            filter.setAttribute("aria-pressed", String(filter === button));
+          });
+
+          cards.forEach((card) => {
+            const matches = category === "all" || card.dataset.category === category;
+            card.style.display = matches ? "" : "none";
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -382,24 +382,24 @@
       }
 
       @media (width >= 640px) and (hover: hover) and (pointer: fine) {
-        .film-player:not(:hover, :has(:focus-visible)) :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+        .film-player:not(:hover, :has(:focus-visible)):not(:has([data-film-buffer]:not([hidden]))) :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
           opacity: 0;
           pointer-events: none;
         }
       }
 
       @media (width < 640px), (hover: none), (pointer: coarse) {
-        .film-player[data-controls-visible="false"] :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+        .film-player[data-controls-visible="false"]:not(:has([data-film-buffer]:not([hidden]))) :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
           opacity: 0;
           pointer-events: none;
         }
       }
 
-      .film-player:fullscreen[data-controls-visible="false"] {
+      .film-player:fullscreen[data-controls-visible="false"]:not(:has([data-film-buffer]:not([hidden]))) {
         cursor: none;
       }
 
-      .film-player:fullscreen[data-controls-visible="false"] :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
+      .film-player:fullscreen[data-controls-visible="false"]:not(:has([data-film-buffer]:not([hidden]))) :is(.film-controls, .film-play-toggle[aria-label="Pause"]) {
         opacity: 0;
         pointer-events: none;
       }
@@ -691,7 +691,7 @@ I build digital experiences and create sounds that tell stories.
                 </span>
                 Watch sound excerpt
               </span>
-              <time datetime="PT39S" class="text-sm tabular-nums text-zinc-400">0:39</time>
+              <time datetime="PT41S" class="text-sm tabular-nums text-zinc-400">0:41</time>
             </div>
             <template>
               <section aria-label="Film roles" class="rounded-xl bg-white/5 p-3">
@@ -713,7 +713,7 @@ I build digital experiences and create sounds that tell stories.
                   </div>
                 </dl>
               </section>
-              <video controls playsinline preload="none" aria-label="Sound design excerpt from WHAT ARE THE ODDS?"
+              <video controls playsinline preload="auto" aria-label="Sound design excerpt from WHAT ARE THE ODDS?"
                 class="w-full object-contain" src="media/video/what-are-the-odds-excerpt.mp4"></video>
             </template>
           </div>
@@ -753,7 +753,7 @@ I build digital experiences and create sounds that tell stories.
                   </div>
                 </dl>
               </section>
-              <video controls playsinline preload="none" aria-label="Sound design excerpt from STUDIO 4"
+              <video controls playsinline preload="auto" aria-label="Sound design excerpt from STUDIO 4"
                 class="w-full object-contain" src="media/video/studio-4-excerpt.mp4"></video>
             </template>
           </div>
@@ -966,6 +966,10 @@ I build digital experiences and create sounds that tell stories.
               <path d="M9 4H4v5m11-5h5v5m0 6v5h-5m-6 0H4v-5" />
             </svg>
           </button>
+        </div>
+        <div data-film-buffer role="status" class="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2" hidden>
+          <span aria-hidden="true" class="block h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full border-2 border-white/20 border-t-white motion-safe:animate-spin"></span>
+          <span class="sr-only">Buffering</span>
         </div>
         <p data-film-status role="status" class="pointer-events-none absolute inset-x-2 bottom-14 rounded bg-black/75 px-3 py-2 text-sm text-zinc-300" hidden></p>
       </div>
@@ -1264,6 +1268,27 @@ I build digital experiences and create sounds that tell stories.
         const fullscreen = player.querySelector("[data-film-fullscreen]");
         const fullscreenIcon = fullscreen.querySelector("path");
         const status = player.querySelector("[data-film-status]");
+        const bufferIndicator = player.querySelector("[data-film-buffer]");
+        let bufferTimer;
+
+        function clearBuffering() {
+          clearTimeout(bufferTimer);
+          bufferTimer = undefined;
+          bufferIndicator.hidden = true;
+        }
+
+        function showBuffering() {
+          if (video.paused || video.ended || video.readyState >= 3 || bufferTimer !== undefined || !bufferIndicator.hidden) return;
+          bufferTimer = setTimeout(() => {
+            bufferTimer = undefined;
+            if (details.open && player.isConnected && !video.paused && video.readyState < 3) {
+              bufferIndicator.hidden = false;
+            }
+          }, 180);
+        }
+
+        ["play", "waiting", "stalled", "seeking"].forEach((event) => video.addEventListener(event, showBuffering));
+        ["playing", "canplay", "pause", "ended", "error"].forEach((event) => video.addEventListener(event, clearBuffering));
         const supportsFullscreen = document.fullscreenEnabled && typeof player.requestFullscreen === "function";
 
         let controlsTimer;
@@ -1323,7 +1348,7 @@ I build digital experiences and create sounds that tell stories.
           try {
             await video.play();
           } catch (error) {
-            if (error.name !== "AbortError") showStatus("This video could not play.");
+            if (error.name !== "AbortError") showStatus("This video is unavailable.");
           }
         }
 
@@ -1400,10 +1425,10 @@ I build digital experiences and create sounds that tell stories.
           }
         });
 
-        ["play", "pause", "ended", "durationchange", "timeupdate", "volumechange"].forEach((event) => {
+        ["loadedmetadata", "play", "pause", "ended", "durationchange", "timeupdate", "volumechange"].forEach((event) => {
           video.addEventListener(event, syncControls);
         });
-        video.addEventListener("error", () => showStatus("This video could not load."));
+        video.addEventListener("error", () => showStatus("This video is unavailable."));
         video.controls = false;
         player.prepend(video);
         syncControls();

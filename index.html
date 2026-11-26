@@ -73,22 +73,26 @@
         scrollbar-width: none;
       }
 
+      #document-gallery > a {
+        mask: linear-gradient(90deg, transparent, #0004 0.65rem, #000c 1.5rem, black 2.5rem, black calc(100% - 2.5rem), #000c calc(100% - 1.5rem), #0004 calc(100% - 0.65rem), transparent)
+          calc(var(--gallery-scroll, 0px) - var(--card-offset, 0px)) 0 / var(--gallery-width, 100%) 100% no-repeat;
+      }
+
       html::-webkit-scrollbar {
         display: none;
       }
 
-      html:has(#project-details[open], #profile-photo-dialog[open]) {
+      html:has(#project-details[open], #profile-photo-dialog[open], #document-dialog[open]) {
         overflow: hidden;
       }
 
-      html:has(#project-details[open], #profile-photo-dialog[open]) #page-scrollbar {
+      html:has(#project-details[open], #profile-photo-dialog[open], #document-dialog[open]) #page-scrollbar {
         visibility: hidden;
       }
 
-      #page-scrollbar {
+      .custom-scrollbar {
         --scrollbar-inset: 8px;
         --thumb-color: rgb(255 255 255 / 20%);
-        position: fixed;
         top: var(--scrollbar-inset);
         right: var(--scrollbar-inset);
         z-index: 60;
@@ -101,15 +105,23 @@
         cursor: default;
       }
 
-      #page-scrollbar::-webkit-slider-runnable-track {
+      #page-scrollbar {
+        position: fixed;
+      }
+
+      #project-details-scrollbar {
+        position: absolute;
+      }
+
+      .custom-scrollbar::-webkit-slider-runnable-track {
         background: transparent;
       }
 
-      #page-scrollbar::-moz-range-track {
+      .custom-scrollbar::-moz-range-track {
         background: transparent;
       }
 
-      #page-scrollbar::-webkit-slider-thumb {
+      .custom-scrollbar::-webkit-slider-thumb {
         appearance: none;
         width: 7px;
         height: var(--thumb-height);
@@ -117,7 +129,7 @@
         background: var(--thumb-color);
       }
 
-      #page-scrollbar::-moz-range-thumb {
+      .custom-scrollbar::-moz-range-thumb {
         width: 7px;
         height: var(--thumb-height);
         border: 0;
@@ -130,13 +142,37 @@
         max-height: 85dvh;
       }
 
+      #project-details[data-category="development"] {
+        max-width: 56rem;
+      }
+
+      #project-details[data-category="development"] > div {
+        display: flex;
+        flex-direction: column;
+        max-height: 85dvh;
+      }
+
+      #project-details[data-category="development"] .project-details-header {
+        flex-shrink: 0;
+      }
+
+      #project-details[data-category="development"] #project-details-content {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+      }
+
+      #project-details[data-category="development"] #project-details-content::-webkit-scrollbar {
+        display: none;
+      }
+
       #project-details[data-category="music"] {
         --artwork-limit: max(0px, calc(85dvh - 20rem));
         max-width: min(27rem, calc(max(16rem, var(--artwork-limit)) + 3rem));
       }
 
       @media (width < 640px) {
-        #page-scrollbar {
+        .custom-scrollbar {
           display: none;
         }
 
@@ -499,7 +535,7 @@ I build digital experiences and create sounds that tell stories.
             <canvas class="h-full w-full object-cover group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" aria-hidden="true" hidden></canvas>
           </button>
           <h1 class="text-2xl font-bold">Frank Villareal</h1>
-          <p class="mt-1 text-sm text-zinc-300">Development &middot; Music &middot; Sound</p>
+          <p class="mt-1 text-sm text-zinc-300">IT Intern</p>
           <div class="mt-3 flex justify-center gap-4">
             <!-- GitHub -->
             <a
@@ -557,21 +593,31 @@ I build digital experiences and create sounds that tell stories.
               <p>I’m currently pursuing a Bachelor of Science in Information Technology at Filamer Christian University, Inc.</p>
               <p>Outside of my studies, I work on creative projects in music and sound.</p>
             </div>
+            <a href="media/documents/frank-benedict-villareal-resume.pdf" target="_blank" rel="noopener" aria-haspopup="dialog" aria-controls="document-dialog" data-document-title="R&eacute;sum&eacute;" class="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-emerald-400">
+              View r&eacute;sum&eacute; <svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0 inline-block align-middle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+            </a>
           </div>
           <div data-scroll-reveal class="rounded-xl bg-zinc-900/80 p-6 shadow-lg backdrop-blur-md">
-            <h3 class="mb-3 text-base font-medium text-white">Skills</h3>
-            <dl class="space-y-3 text-sm">
-              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
-                <dt class="font-medium text-zinc-300">Development</dt>
-                <dd class="leading-relaxed text-zinc-400">Python, Django, JavaScript, HTML, CSS, Tailwind CSS, MySQL, PostgreSQL</dd>
+            <dl aria-label="Skills" class="divide-y divide-white/10 text-sm">
+              <div class="grid gap-x-4 gap-y-1 py-2 first:pt-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Languages</dt>
+                <dd class="leading-relaxed text-zinc-400">Python, JavaScript, HTML, CSS</dd>
               </div>
-              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
+              <div class="grid gap-x-4 gap-y-1 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Frameworks</dt>
+                <dd class="leading-relaxed text-zinc-400">Django, Tailwind CSS</dd>
+              </div>
+              <div class="grid gap-x-4 gap-y-1 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Databases</dt>
+                <dd class="leading-relaxed text-zinc-400">MySQL, PostgreSQL</dd>
+              </div>
+              <div class="grid gap-x-4 gap-y-1 py-2 sm:grid-cols-[9rem_minmax(0,1fr)]">
+                <dt class="font-medium text-zinc-300">Tools</dt>
+                <dd class="leading-relaxed text-zinc-400">Visual Studio Code, Git, GitHub, XAMPP, Codex, Claude Code</dd>
+              </div>
+              <div class="grid gap-x-4 gap-y-1 py-2 last:pb-0 sm:grid-cols-[9rem_minmax(0,1fr)]">
                 <dt class="font-medium text-zinc-300">IT Support &amp; Networking</dt>
-                <dd class="leading-relaxed text-zinc-400">Troubleshooting, software setup, LAN setup, Ethernet cabling</dd>
-              </div>
-              <div class="grid gap-x-4 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)]">
-                <dt class="font-medium text-zinc-300">Audio</dt>
-                <dd class="leading-relaxed text-zinc-400">Music production, sound recording, sound design</dd>
+                <dd class="leading-relaxed text-zinc-400">Troubleshooting, software configuration, basic computer maintenance, IP configuration, LAN setup, connectivity testing, Ethernet cabling</dd>
               </div>
             </dl>
           </div>
@@ -583,8 +629,8 @@ I build digital experiences and create sounds that tell stories.
         <div data-scroll-reveal class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-4 mb-8">
           <h2 class="text-4xl font-bold text-emerald-400">Projects</h2>
           <div class="flex flex-wrap gap-x-4 gap-y-2" role="group" aria-label="Filter projects">
-            <button type="button" data-filter="all" aria-pressed="true" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">All</button>
-            <button type="button" data-filter="development" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Development</button>
+            <button type="button" data-filter="all" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">All</button>
+            <button type="button" data-filter="development" aria-pressed="true" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Development</button>
             <button type="button" data-filter="music" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Music</button>
             <button type="button" data-filter="sound" aria-pressed="false" class="py-2 hover:text-emerald-400 aria-pressed:text-emerald-400 aria-pressed:underline underline-offset-8">Sound</button>
           </div>
@@ -606,8 +652,33 @@ I build digital experiences and create sounds that tell stories.
               View details
             </span>
             <template>
-              <p>A webcam game that tracks your face and hands in real time. Use mouth movements to play and hand gestures in boss battles as the difficulty increases.</p>
-              <p><strong>Built with</strong> Python, OpenCV, MediaPipe, NumPy</p>
+              <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+                <div><dt class="font-semibold text-emerald-400">Role</dt><dd class="mt-1">Primary Developer</dd></div>
+                <div><dt class="font-semibold text-emerald-400">Tech stack</dt><dd class="mt-1">Python, OpenCV, MediaPipe, NumPy</dd></div>
+              </dl>
+              <article class="mx-auto mt-8 max-w-2xl space-y-8 leading-relaxed">
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">The challenge</h2>
+                  <p>The game needed to turn webcam footage into two distinct controls: opening your mouth to catch falling items and pinching with your fingers during boss fights.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">How it works</h2>
+                  <p>Players move their head to line up with falling orbs and stars, open their mouth to catch them, and dodge bombs. Consecutive catches increase the score multiplier. During boss fights, players pinch incoming bombs and move them toward the boss to deal damage.</p>
+                  <p class="mt-3">The game measures mouth opening relative to the distance between the eyes and pinch distance relative to hand size. Separate thresholds for starting and releasing each gesture help prevent rapid toggling near the cutoff.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">Why OpenCV and MediaPipe</h2>
+                  <p>OpenCV handles webcam capture and draws the game over the live feed. MediaPipe supplies face and hand landmarks, which Python uses to interpret gestures and update gameplay.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">My contributions</h2>
+                  <p>As the primary developer, I implemented face and hand tracking, mouth-controlled gameplay, collision detection, scoring, progressive difficulty, and gesture-controlled boss battles.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">Project links</h2>
+                  <a href="https://github.com/knarfbv/face-catcher" target="_blank" rel="noopener" class="font-medium text-emerald-400 hover:text-emerald-300">View source on GitHub</a>
+                </section>
+              </article>
             </template>
           </div>
 
@@ -626,8 +697,37 @@ I build digital experiences and create sounds that tell stories.
               View details
             </span>
             <template>
-              <p>A web app for tracking ice plant inventory, managing customer records, and processing orders. It stores business data in a relational database.</p>
-              <p><strong>Built with</strong> Python, Django, MySQL</p>
+              <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+                <div><dt class="font-semibold text-emerald-400">Role</dt><dd class="mt-1">Primary Developer</dd></div>
+                <div><dt class="font-semibold text-emerald-400">Tech stack</dt><dd class="mt-1">Python, Django, MySQL, Tailwind CSS</dd></div>
+              </dl>
+              <article class="mx-auto mt-8 max-w-2xl space-y-8 leading-relaxed">
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">The challenge</h2>
+                  <p>Ice plant staff need to track stock, find customer records, and process orders. The project brought those tasks into one web application.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">How it works</h2>
+                  <p>The dashboard shows recent orders, order counts by status, delivered-order revenue, and products with 10 or fewer units in stock. Staff can manage inventory and customers and move orders through pending, confirmed, delivered, or cancelled statuses.</p>
+                  <p class="mt-3">When staff add a line item, the app checks available stock and subtracts the ordered quantity. It saves the product name, size, and price on the order line so later inventory edits do not change those details on existing orders.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">Why Django and MySQL</h2>
+                  <p>Django provides form validation, authentication, and an ORM for the app's record-management workflows. MySQL stores the relationships between customers, orders, line items, and inventory.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">My contributions</h2>
+                  <p>As the primary developer, I implemented the backend functionality and integrated the relational database used to store and manage inventory, customers, and orders.</p>
+                </section>
+                <section>
+                  <h2 class="mb-3 text-xl font-semibold text-white">Project links</h2>
+                  <a href="https://github.com/knarfbv/iceplantms" target="_blank" rel="noopener" class="mb-2 block font-medium text-emerald-400 hover:text-emerald-300">View source on GitHub</a>
+                  <a href="media/documents/ice-plant-ms-governance-portfolio.pdf" target="_blank" rel="noopener" class="inline-flex items-center gap-2 font-medium text-emerald-400 hover:text-emerald-300">
+                    View governance portfolio (PDF)
+                    <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+                  </a>
+                </section>
+              </article>
             </template>
           </div>
 
@@ -794,9 +894,36 @@ I build digital experiences and create sounds that tell stories.
         </div>
       </section>
 
+      <section id="documentation" aria-labelledby="documentation-heading" class="mx-auto mt-16 w-full max-w-5xl text-zinc-300 sm:mt-24">
+        <h2 id="documentation-heading" data-scroll-reveal class="mb-6 text-3xl font-bold text-emerald-400 sm:text-4xl">Documents</h2>
+        <div data-scroll-reveal id="document-gallery" class="relative flex cursor-grab select-none active:cursor-grabbing gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <a href="media/documents/ice-plant-ms-governance-portfolio.pdf" data-document-pages="8" target="_blank" rel="noopener" aria-haspopup="dialog" aria-controls="document-dialog" class="group flex w-[86%] shrink-0 items-center gap-3 rounded-xl bg-zinc-900/80 p-3 text-white shadow-lg ring-1 ring-inset ring-transparent backdrop-blur-md transition-colors hover:ring-emerald-400/50 focus-visible:ring-emerald-400/50 sm:w-[52%] sm:gap-4 sm:p-4 lg:w-[36%]">
+            <div class="flex h-24 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-20">
+              <img src="media/documents/previews/ice-plant-ms-governance-portfolio.webp" alt="" width="901" height="1165" loading="lazy" class="block h-full w-full object-contain drop-shadow-md group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            </div>
+            <h3 class="min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base">IcePlant MS Governance Portfolio</h3>
+            <svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-emerald-400 group-focus-visible:text-emerald-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+          </a>
+          <a href="media/documents/frank-benedict-villareal-application-letter.pdf" target="_blank" rel="noopener" aria-haspopup="dialog" aria-controls="document-dialog" class="group flex w-[86%] shrink-0 items-center gap-3 rounded-xl bg-zinc-900/80 p-3 text-white shadow-lg ring-1 ring-inset ring-transparent backdrop-blur-md transition-colors hover:ring-emerald-400/50 focus-visible:ring-emerald-400/50 sm:w-[52%] sm:gap-4 sm:p-4 lg:w-[36%]">
+            <div class="flex h-24 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-20">
+              <img src="media/documents/previews/frank-benedict-villareal-application-letter.webp" alt="" width="900" height="1272" loading="lazy" class="block h-full w-full object-contain drop-shadow-md group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            </div>
+            <h3 class="min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base">Application Letter</h3>
+            <svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-emerald-400 group-focus-visible:text-emerald-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+          </a>
+          <a href="media/documents/frank-benedict-villareal-resume.pdf" target="_blank" rel="noopener" aria-haspopup="dialog" aria-controls="document-dialog" class="group flex w-[86%] shrink-0 items-center gap-3 rounded-xl bg-zinc-900/80 p-3 text-white shadow-lg ring-1 ring-inset ring-transparent backdrop-blur-md transition-colors hover:ring-emerald-400/50 focus-visible:ring-emerald-400/50 sm:w-[52%] sm:gap-4 sm:p-4 lg:w-[36%]">
+            <div class="flex h-24 w-16 shrink-0 items-center justify-center sm:h-28 sm:w-20">
+              <img src="media/documents/previews/frank-benedict-villareal-resume.webp" alt="" width="900" height="1272" loading="lazy" class="block h-full w-full object-contain drop-shadow-md group-hover:brightness-110 group-focus-within:brightness-110 motion-safe:transition" />
+            </div>
+            <h3 class="min-w-0 flex-1 text-sm font-semibold leading-snug sm:text-base">R&eacute;sum&eacute;</h3>
+            <svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0 text-zinc-400 transition-colors group-hover:text-emerald-400 group-focus-visible:text-emerald-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+          </a>
+        </div>
+      </section>
+
       <!-- Contact -->
       <section id="contact" class="mx-auto my-16 w-full max-w-5xl sm:my-24">
-        <h2 data-scroll-reveal class="mb-6 text-center text-4xl font-bold text-emerald-400">Contact</h2>
+        <h2 data-scroll-reveal class="mb-6 text-center text-4xl font-bold text-emerald-400">Get in touch</h2>
         <div data-scroll-reveal class="rounded-xl bg-zinc-900/80 p-6 text-white shadow-lg backdrop-blur-md sm:p-8">
           <form id="contact-form" aria-describedby="contact-status" class="grid min-w-0 items-start gap-4 sm:grid-cols-2">
             <div class="grid gap-2">
@@ -831,7 +958,7 @@ I build digital experiences and create sounds that tell stories.
               ></textarea>
             </div>
             <div class="flex items-start justify-between gap-3 sm:col-span-2">
-              <p id="contact-status" class="min-w-0 text-sm text-zinc-300">Message delivery is currently unavailable.</p>
+              <p id="contact-status" class="min-w-0 text-sm text-zinc-300">Or you can email me directly at <a href="mailto:fbvillareal@gmail.com" class="font-semibold text-emerald-400 transition-colors hover:text-emerald-300">fbvillareal@gmail.com</a></p>
               <button
                 type="submit"
                 disabled
@@ -859,10 +986,23 @@ I build digital experiences and create sounds that tell stories.
     <footer class="w-full max-w-5xl py-8 mx-auto">
       <div class="text-xs text-center text-zinc-900">© 2026 Frank Villareal. All Rights Reserved.</div>
     </footer>
-    <input id="page-scrollbar" type="range" aria-label="Page scroll position" min="0" value="0" hidden />
+    <input id="page-scrollbar" class="custom-scrollbar" type="range" aria-label="Page scroll position" min="0" value="0" hidden />
     <dialog id="profile-photo-dialog" aria-label="Profile photo"
       class="fixed inset-0 m-auto overflow-hidden bg-zinc-900/70 shadow-2xl backdrop:bg-black/50">
       <img src="media/images/profile.png" class="block h-auto w-full" />
+    </dialog>
+    <dialog id="document-dialog" aria-label="Document preview" class="fixed inset-0 m-auto w-fit max-w-[calc(100%-2rem)] overflow-hidden bg-transparent text-white backdrop:bg-black/50">
+      <img data-document-preview alt="" class="block h-auto max-h-[85dvh] w-auto max-w-full object-contain shadow-2xl" />
+      <div class="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <a data-document-pdf target="_blank" rel="noopener" class="px-3 py-2 text-sm text-zinc-300 transition-colors hover:text-emerald-400">
+          Open PDF <svg aria-hidden="true" class="h-3.5 w-3.5 shrink-0 inline-block align-middle" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12 12 4m-6 0h6v6" /></svg>
+        </a>
+        <div data-document-pagination class="items-center justify-center gap-4 text-sm text-zinc-300 [&:not([hidden])]:flex" hidden>
+          <button type="button" data-document-page-step="-1" aria-label="Previous page" class="grid h-8 w-8 select-none place-items-center rounded-full hover:text-emerald-400 disabled:opacity-40"><svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 12H6m6 6-6-6 6-6" /></svg></button>
+          <span data-document-page-count aria-live="polite"></span>
+          <button type="button" data-document-page-step="1" aria-label="Next page" class="grid h-8 w-8 select-none place-items-center rounded-full hover:text-emerald-400 disabled:opacity-40"><svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12m-6-6 6 6-6 6" /></svg></button>
+        </div>
+      </div>
     </dialog>
     <dialog id="project-image-dialog" aria-label="Enlarged project image"
       class="fixed inset-0 m-auto w-fit overflow-hidden bg-zinc-900/70 shadow-2xl backdrop:bg-black/50">
@@ -891,6 +1031,7 @@ I build digital experiences and create sounds that tell stories.
           </div>
         </div>
         <div id="project-details-content" class="space-y-4 text-zinc-300"></div>
+        <input id="project-details-scrollbar" class="custom-scrollbar" type="range" aria-label="Project details scroll position" aria-controls="project-details-content" min="0" value="0" hidden />
       </div>
     </dialog>
     <dialog id="track-credits" aria-labelledby="track-credits-title"
@@ -968,7 +1109,7 @@ I build digital experiences and create sounds that tell stories.
           </button>
         </div>
         <div data-film-buffer role="status" class="pointer-events-none absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2" hidden>
-          <span aria-hidden="true" class="block h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full border-2 border-white/20 border-t-white motion-safe:animate-spin"></span>
+          <svg aria-hidden="true" class="block h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] motion-safe:animate-spin" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="31" class="text-white/20" /><path d="M10.08 10.08a31 31 0 0 1 43.84 0" class="text-white" /></svg>
           <span class="sr-only">Buffering</span>
         </div>
         <p data-film-status role="status" class="pointer-events-none absolute inset-x-2 bottom-14 rounded bg-black/75 px-3 py-2 text-sm text-zinc-300" hidden></p>
@@ -1031,15 +1172,20 @@ I build digital experiences and create sounds that tell stories.
         scrollPage.scrollTo({ top: 0, behavior: reduceMotion ? "instant" : "smooth" });
       });
 
+      function syncScrollThumb(scroller, scrollbar) {
+        const viewportHeight = scroller.clientHeight;
+        const contentHeight = scroller.scrollHeight;
+        const scrollRange = contentHeight - viewportHeight;
+        scrollbar.hidden = scrollRange <= 0;
+        if (scrollbar.hidden) return;
+        scrollbar.max = scrollRange;
+        scrollbar.value = scroller.scrollTop;
+        const thumbHeight = scrollbar.clientHeight * viewportHeight / contentHeight;
+        scrollbar.style.setProperty("--thumb-height", `${Math.max(32, thumbHeight)}px`);
+      }
+
       function syncScrollbar() {
-        const viewportHeight = scrollPage.clientHeight;
-        const pageHeight = scrollPage.scrollHeight;
-        const scrollRange = pageHeight - viewportHeight;
-        pageScrollbar.hidden = scrollRange <= 0;
-        pageScrollbar.max = scrollRange;
-        pageScrollbar.value = scrollPage.scrollTop;
-        const thumbHeight = pageScrollbar.clientHeight * viewportHeight / pageHeight;
-        pageScrollbar.style.setProperty("--thumb-height", `${Math.max(32, thumbHeight)}px`);
+        syncScrollThumb(scrollPage, pageScrollbar);
       }
 
       pageScrollbar.addEventListener("input", () => {
@@ -1118,6 +1264,24 @@ I build digital experiences and create sounds that tell stories.
       const detailsTitle = document.querySelector("#project-details-title");
       const detailsSubtitle = document.querySelector("#project-details-subtitle");
       const detailsContent = document.querySelector("#project-details-content");
+      const detailsScrollbar = document.querySelector("#project-details-scrollbar");
+
+      function syncDetailsScrollbar() {
+        if (!details.open || details.dataset.category !== "development") {
+          detailsScrollbar.hidden = true;
+          return;
+        }
+        syncScrollThumb(detailsContent, detailsScrollbar);
+      }
+
+      detailsScrollbar.addEventListener("input", () => {
+        detailsContent.scrollTo({ top: detailsScrollbar.valueAsNumber, behavior: "instant" });
+      });
+      detailsContent.addEventListener("scroll", () => {
+        detailsScrollbar.value = detailsContent.scrollTop;
+      }, { passive: true });
+      detailsContent.addEventListener("load", syncDetailsScrollbar, true);
+      new ResizeObserver(syncDetailsScrollbar).observe(detailsContent);
       const coverButton = details.querySelector("[data-open-credits]");
       const closeProject = details.querySelector('form[method="dialog"] button');
       const audioControls = document.querySelector("#project-audio-controls");
@@ -1477,6 +1641,7 @@ I build digital experiences and create sounds that tell stories.
         if (event.target === profilePhoto) profilePhoto.close();
       });
 
+
       const projectImageDialog = document.querySelector("#project-image-dialog");
       projectImageDialog.addEventListener("click", (event) => {
         if (event.target === projectImageDialog) projectImageDialog.close();
@@ -1522,6 +1687,8 @@ I build digital experiences and create sounds that tell stories.
         closeProject.tabIndex = audio ? -1 : 0;
         if (audio) addPlayer(audio, card, autoplay);
         if (!details.open) showUnfocusedModal(details);
+        detailsContent.scrollTop = 0;
+        syncDetailsScrollbar();
       }
 
       coverButton.addEventListener("click", () => {
@@ -1621,20 +1788,198 @@ I build digital experiences and create sounds that tell stories.
         detailsContent.querySelector("audio, video")?.pause();
       });
 
-      filters.forEach((button) => {
+      const documentGallery = document.querySelector("#document-gallery");
+      const documentDialog = document.querySelector("#document-dialog");
+      const documentPdf = documentDialog.querySelector("[data-document-pdf]");
+      const documentPreview = documentDialog.querySelector("[data-document-preview]");
+      const documentPagination = documentDialog.querySelector("[data-document-pagination]");
+      const documentPageCount = documentDialog.querySelector("[data-document-page-count]");
+      const [previousPage, nextPage] = documentDialog.querySelectorAll("[data-document-page-step]");
+      let documentPage = 1;
+      let totalDocumentPages = 1;
+
+      function showDocumentPage() {
+        const preview = new URL(documentPdf.href);
+        const suffix = documentPage === 1 ? "" : "-page-" + documentPage;
+        preview.pathname = preview.pathname.replace(/\/([^/]+)\.pdf$/, "/previews/$1" + suffix + ".webp");
+        documentPreview.src = preview.href;
+        documentPreview.alt = documentDialog.getAttribute("aria-label") + ", page " + documentPage;
+        documentPageCount.textContent = documentPage + " / " + totalDocumentPages;
+        previousPage.disabled = documentPage === 1;
+        nextPage.disabled = documentPage === totalDocumentPages;
+      }
+
+      [previousPage, nextPage].forEach((button) => {
         button.addEventListener("click", () => {
-          const category = button.dataset.filter;
-
-          filters.forEach((filter) => {
-            filter.setAttribute("aria-pressed", String(filter === button));
-          });
-
-          cards.forEach((card) => {
-            const matches = category === "all" || card.dataset.category === category;
-            card.style.display = matches ? "" : "none";
-          });
+          documentPage += Number(button.dataset.documentPageStep);
+          showDocumentPage();
         });
       });
+
+      document.addEventListener("click", (event) => {
+        const card = event.target.closest('a[aria-controls="document-dialog"]');
+        if (!card || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+        event.preventDefault();
+        const title = card.dataset.documentTitle ?? card.querySelector("h3").textContent.trim();
+        documentDialog.setAttribute("aria-label", title);
+        documentPdf.href = card.href;
+        documentPage = 1;
+        totalDocumentPages = Number(card.dataset.documentPages ?? 1);
+        documentPagination.hidden = totalDocumentPages === 1;
+        showDocumentPage();
+        documentDialog.showModal();
+      });
+
+      documentDialog.addEventListener("click", (event) => {
+        if (event.target !== documentDialog) return;
+        const { left, right, top, bottom } = documentDialog.getBoundingClientRect();
+        if (event.clientX < left || event.clientX >= right || event.clientY < top || event.clientY >= bottom) {
+          documentDialog.close();
+        }
+      });
+      documentDialog.addEventListener("close", () => {
+        if (!documentDialog.open) documentPreview.removeAttribute("src");
+      });
+
+      const originalDocumentCards = Array.from(documentGallery.children);
+      const copyDocumentCards = () => originalDocumentCards.map((card) => {
+        const copy = card.cloneNode(true);
+        copy.tabIndex = -1;
+        copy.setAttribute("aria-hidden", "true");
+        return copy;
+      });
+      const leadingDocumentCards = copyDocumentCards();
+      documentGallery.prepend(...leadingDocumentCards);
+      documentGallery.append(...copyDocumentCards());
+
+      let galleryDrag;
+      let suppressGalleryClick = false;
+      let galleryCycle = 0;
+      let galleryGlide;
+
+      function wrapDocumentGallery() {
+        if (!galleryCycle) return;
+        const position = documentGallery.scrollLeft;
+        const offset = position < galleryCycle ? galleryCycle : position >= 2 * galleryCycle ? -galleryCycle : 0;
+        if (offset) {
+          documentGallery.scrollLeft = position + offset;
+          if (galleryDrag) galleryDrag.startScroll += offset;
+        }
+        documentGallery.style.setProperty("--gallery-scroll", documentGallery.scrollLeft + "px");
+      }
+
+      function sizeDocumentGallery() {
+        const previousCycle = galleryCycle;
+        galleryCycle = Math.round(originalDocumentCards[0].getBoundingClientRect().left -
+          leadingDocumentCards[0].getBoundingClientRect().left);
+        if (!galleryCycle) return;
+        const progress = previousCycle ? (documentGallery.scrollLeft - previousCycle) / previousCycle : 0;
+        const offsets = Array.from(documentGallery.children, (card) => [card, card.offsetLeft]);
+        documentGallery.style.setProperty("--gallery-width", documentGallery.clientWidth + "px");
+        for (const [card, offset] of offsets) {
+          card.style.setProperty("--card-offset", offset + "px");
+        }
+        documentGallery.scrollLeft = galleryCycle * (1 + progress);
+        wrapDocumentGallery();
+      }
+
+      sizeDocumentGallery();
+      new ResizeObserver(sizeDocumentGallery).observe(documentGallery);
+      documentGallery.addEventListener("scroll", wrapDocumentGallery, { passive: true });
+
+      function stopGalleryGlide() {
+        cancelAnimationFrame(galleryGlide);
+      }
+
+      function glideDocumentGallery(velocity) {
+        let lastTime = performance.now();
+        let position = documentGallery.scrollLeft;
+
+        function advance(time) {
+          const elapsed = Math.min(32, time - lastTime);
+          lastTime = time;
+          velocity *= Math.exp(-elapsed / 110);
+          position += velocity * elapsed;
+          documentGallery.scrollLeft = position;
+          const beforeWrap = documentGallery.scrollLeft;
+          wrapDocumentGallery();
+          position += documentGallery.scrollLeft - beforeWrap;
+          if (Math.abs(velocity) > 0.025) galleryGlide = requestAnimationFrame(advance);
+        }
+
+        galleryGlide = requestAnimationFrame(advance);
+      }
+
+      documentGallery.addEventListener("wheel", stopGalleryGlide, { passive: true });
+      documentGallery.addEventListener("dragstart", (event) => event.preventDefault());
+      documentGallery.addEventListener("pointerdown", (event) => {
+        stopGalleryGlide();
+        suppressGalleryClick = false;
+        if (event.pointerType !== "mouse" || event.button !== 0) return;
+        galleryDrag = {
+          id: event.pointerId,
+          startX: event.clientX,
+          startScroll: documentGallery.scrollLeft,
+          lastX: event.clientX,
+          lastTime: event.timeStamp,
+          velocity: 0,
+        };
+      });
+
+      documentGallery.addEventListener("pointermove", (event) => {
+        if (galleryDrag?.id !== event.pointerId) return;
+        const delta = event.clientX - galleryDrag.startX;
+        if (!suppressGalleryClick && Math.abs(delta) < 6) return;
+        if (!suppressGalleryClick) {
+          suppressGalleryClick = true;
+          documentGallery.setPointerCapture(event.pointerId);
+        }
+        const elapsed = Math.max(8, event.timeStamp - galleryDrag.lastTime);
+        const velocity = (galleryDrag.lastX - event.clientX) / elapsed;
+        galleryDrag.velocity = Math.max(-2, Math.min(2, velocity));
+        galleryDrag.lastX = event.clientX;
+        galleryDrag.lastTime = event.timeStamp;
+        documentGallery.scrollLeft = galleryDrag.startScroll - delta;
+        wrapDocumentGallery();
+      });
+
+      function endGalleryDrag(event) {
+        if (galleryDrag?.id !== event.pointerId) return;
+        const { lastTime, velocity } = galleryDrag;
+        galleryDrag = undefined;
+        if (event.type === "pointerup" && suppressGalleryClick && event.timeStamp - lastTime < 80 &&
+            Math.abs(velocity) > 0.1 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          glideDocumentGallery(velocity);
+        }
+      }
+
+      window.addEventListener("pointerup", endGalleryDrag);
+      window.addEventListener("pointercancel", endGalleryDrag);
+      documentGallery.addEventListener("lostpointercapture", endGalleryDrag);
+      documentGallery.addEventListener("click", (event) => {
+        if (!suppressGalleryClick || event.detail === 0) return;
+        suppressGalleryClick = false;
+        event.preventDefault();
+      }, true);
+
+      function applyProjectFilter(button) {
+        const category = button.dataset.filter;
+
+        filters.forEach((filter) => {
+          filter.setAttribute("aria-pressed", String(filter === button));
+        });
+
+        cards.forEach((card) => {
+          const matches = category === "all" || card.dataset.category === category;
+          card.style.display = matches ? "" : "none";
+        });
+      }
+
+      filters.forEach((button) => {
+        button.addEventListener("click", () => applyProjectFilter(button));
+      });
+      applyProjectFilter(projects.querySelector('[data-filter][aria-pressed="true"]'));
     </script>
   </body>
 </html>

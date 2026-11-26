@@ -162,6 +162,14 @@
         scrollbar-width: none;
       }
 
+      #project-details[data-category="development"] #project-details-content > .project-image-zoom + p {
+        margin-top: 0.5rem;
+      }
+
+      #project-details[data-category="development"] #project-details-content > p + dl {
+        margin-top: 2rem;
+      }
+
       #project-details[data-category="development"] #project-details-content::-webkit-scrollbar {
         display: none;
       }
@@ -652,7 +660,7 @@ I build digital experiences and create sounds that tell stories.
               View details
             </span>
             <template>
-              <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              <dl class="mx-auto mt-5 grid max-w-2xl gap-3 text-sm sm:grid-cols-2">
                 <div><dt class="font-semibold text-emerald-400">Role</dt><dd class="mt-1">Primary Developer</dd></div>
                 <div><dt class="font-semibold text-emerald-400">Tech stack</dt><dd class="mt-1">Python, OpenCV, MediaPipe, NumPy</dd></div>
               </dl>
@@ -697,7 +705,7 @@ I build digital experiences and create sounds that tell stories.
               View details
             </span>
             <template>
-              <dl class="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+              <dl class="mx-auto mt-5 grid max-w-2xl gap-3 text-sm sm:grid-cols-2">
                 <div><dt class="font-semibold text-emerald-400">Role</dt><dd class="mt-1">Primary Developer</dd></div>
                 <div><dt class="font-semibold text-emerald-400">Tech stack</dt><dd class="mt-1">Python, Django, MySQL, Tailwind CSS</dd></div>
               </dl>
